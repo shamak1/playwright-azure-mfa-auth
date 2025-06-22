@@ -42,6 +42,16 @@ cd playwright-azure-mfa-auth
 # Install dependencies
 npm install
 ```
+> [!IMPORTANT]
+> This project already includes Playwright in its dependencies.
+> 
+> ```json
+> {
+>   "devDependencies": {
+>     "@playwright/test": "^1.53.1"
+>   }
+> }
+> ```
 
 ### 4. Configure Environment Variables
 
@@ -87,6 +97,36 @@ npx playwright test --headed
 4. **Session Save**: Stores authentication cookies in `auth.json`
 5. **Test Execution**: All tests reuse the saved session
 
+The authentication is orchestrated through Playwright's `globalSetup` configuration:
+
+```typescript
+// playwright.config.ts
+export default defineConfig({
+  globalSetup: require.resolve('./login/authentication-setup'),
+  use: {
+    storageState: './login/auth.json',
+  },
+});
+```
+
+### Key Functions
+
+The authentication uses two main functions:
+
+```typescript
+// 1. Entry point called by Playwright's globalSetup
+export default async function globalSetup(): Promise<void>
+
+// 2. Handles complete login flow including MFA  
+async function authenticate(page, userName, password, pageURL, otpSecret?)
+
+// 3. Generates TOTP codes when MFA is required
+function generateMicrosoftTOTP(userName: string, otpSecret: string): string
+```
+
+> [!NOTE]
+> Check `login/authentication-setup.ts` for the complete implementation details.
+
 ## Azure DevOps Pipeline Setup
 
 ### 1. Create Variable Group
@@ -120,8 +160,7 @@ The pipeline runs automatically on:
 - ✅ Never commit `.env` files or `auth.json`
 - ✅ Use Azure DevOps variable groups for secrets
 - ✅ Mark sensitive variables as secret
-- ✅ Use service accounts with minimal permissions
-- ✅ Regularly rotate credentials
+- ✅ Use accounts with sufficient permissions / roles
 
 ## Troubleshooting
 
