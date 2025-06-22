@@ -1,0 +1,27 @@
+{
+  "name": "playwright-azure-mfa-auth",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shamak1/playwright-azure-mfa-auth.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/shamak1/playwright-azure-mfa-auth/issues"
+  },
+  "homepage": "https://github.com/shamak1/playwright-azure-mfa-auth#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.53.1",
+    "@types/node": "^24.0.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "otpauth": "^9.4.0"
+  }
+}
