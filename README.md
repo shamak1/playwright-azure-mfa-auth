@@ -16,7 +16,7 @@ This project enables automated end-to-end testing of Microsoft 365 applications 
 
 ### 1. Prerequisites
 
-- Node.js 17.x or higher
+- Node.js 18.x or higher
 - Azure DevOps access (for CI/CD)
 - Microsoft 365 account with access to the applications you want to test
 
@@ -41,9 +41,6 @@ cd playwright-azure-mfa-auth
 
 # Install dependencies
 npm install
-
-# Install Playwright browsers
-npm init playwright@latest
 ```
 
 ### 4. Configure Environment Variables
@@ -150,8 +147,6 @@ playwright/.cache/
 
 ## Acknowledgments
 
-This solution is based on the excellent work by **Elio Struyf** in his article [**"Automating M365 login with MFA in Playwright tests"**](https://www.eliostruyf.com/automating-microsoft-365-login-mfa-playwright-tests/). Thank you for sharing this valuable approach!
+Authentication implementation follows the approach outlined by **Elio Struyf** in his article [**"Automating M365 login with MFA in Playwright tests"**](https://www.eliostruyf.com/automating-microsoft-365-login-mfa-playwright-tests/) and was adapted based on it.
 
 ---
-
-**Note**: This solution works with any Microsoft 365 application that uses the standard Microsoft authentication flow. For specific applications, you may need to adjust the authentication selectors in `authentication-setup.ts`.
