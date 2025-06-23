@@ -137,8 +137,11 @@ export default defineConfig({
   },
 });
 ```
+<<<<<<< HEAD
 > [!NOTE]
 > To better understand how Playwright's `globalSetup` works and how it's used to initialize authentication or setup logic before tests, visit the [official documentation](https://playwright.dev/docs/test-global-setup-teardown). 
+=======
+>>>>>>> e4bf4558f881f724270546777cb4c539dc06b3fd
 
 ### Key Functions
 
