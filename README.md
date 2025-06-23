@@ -226,6 +226,6 @@ playwright/.cache/
 
 ## Acknowledgments
 
-Authentication implementation follows the approach outlined by **Elio Struyf** in his article [**"Automating M365 login with MFA in Playwright tests"**](https://www.eliostruyf.com/automating-microsoft-365-login-mfa-playwright-tests/) and was adapted based on it.
+Authentication implementation follows the approach outlined by **Elio Struyf** in his article [**Automating M365 login with MFA in Playwright tests**](https://www.eliostruyf.com/automating-microsoft-365-login-mfa-playwright-tests/) and was adapted based on it.
 
 ---
