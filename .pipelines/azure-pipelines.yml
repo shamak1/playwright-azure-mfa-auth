@@ -10,7 +10,7 @@ variables:
 - group: M365 Credentials
 
 pool:
-  vmImage: windows-latest
+  vmImage: ubuntu-latest
 
 steps:
 - task: NodeTool@0

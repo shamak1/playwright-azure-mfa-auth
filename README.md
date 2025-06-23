@@ -16,7 +16,7 @@ This project enables automated end-to-end testing of Microsoft 365 applications 
 
 ### 1. Prerequisites
 
-- Node.js 17.x or higher
+- Node.js 18.x or higher
 - Azure DevOps access (for CI/CD)
 - Microsoft 365 account with access to the applications you want to test
 
@@ -41,10 +41,17 @@ cd playwright-azure-mfa-auth
 
 # Install dependencies
 npm install
-
-# Install Playwright browsers
-npm init playwright@latest
 ```
+> [!IMPORTANT]
+> This project already includes Playwright in its dependencies.
+> 
+> ```json
+> {
+>   "devDependencies": {
+>     "@playwright/test": "^1.53.1"
+>   }
+> }
+> ```
 
 ### 4. Configure Environment Variables
 
@@ -52,8 +59,10 @@ Create a `.env` file in the root directory:
 
 ```env
 M365_PAGE_URL=https://your-microsoft365-app-url.com/
+
 M365_USERNAME=your-email@domain.com
 M365_PASSWORD=your-password
+
 M365_OTP_SECRET=your-totp-secret-key
 ```
 
@@ -67,19 +76,46 @@ npx playwright test
 npx playwright test --headed
 ```
 
+## Creating Tests with Playwright Codegen
+
+You can use Playwright's code generation tool to create tests by recording your interactions:
+
+### Command Line Codegen
+```bash
+# Generate tests for your Microsoft 365 application
+npx playwright codegen https://xxxxxxxxxxxxx.crm4.dynamics.com/
+```
+
+📖 **Learn more**: [Running Codegen from Command Line](https://playwright.dev/docs/codegen#running-codegen)
+
+### Visual Studio Code Extension
+For an enhanced development experience, install the [Playwright VS Code extension](https://marketplace.visualstudio.com/items?itemName=ms-playwright.playwright) which provides:
+- **Integrated Test Runner**: Run and debug tests directly in VS Code
+- **Record New Tests**: Generate tests using the built-in recorder
+- **Pick Locator**: Interactive element selection
+- **Live Debugging**: Step through tests with full debugging support
+
+📖 **Learn more**: [VS Code Extension for Test Recording](https://playwright.dev/docs/getting-started-vscode#opening-the-testing-sidebar)
+
+> [!NOTE]
+> Codegen will start a fresh browser session and won't automatically use your saved authentication. You'll need to log in manually during the recording session, then copy the generated actions into your test files.
+
 ## Project Structure
 
 ```
-├── .pipelines/
-│   └── azure-pipelines.yml        # Azure DevOps pipeline
-├── login/
-│   ├── authentication-setup.ts    # Global auth setup & TOTP generation
+playwright-ci-cd/
+├── 📁 .pipelines/
+│   └── azure-pipelines.yml        # CI/CD configuration
+├── 📁 login/
+│   ├── authentication-setup.ts    # Authentication logic & TOTP generation
 │   └── auth.json                  # Session storage (auto-generated)
-├── tests/
+├── 📁 tests/
 │   └── *.spec.ts                  # Your test files
-├── playwright.config.ts           # Playwright configuration
-├── .env                          # Local environment variables
-└── README.md
+├── 📁 test-results/               # JUnit XML reports (auto-generated)
+├── 📁 playwright-report/          # HTML reports (auto-generated)
+├── ⚙️ playwright.config.ts         # Main configuration
+├── 📄 .env                        # Local secrets (create this)
+└── 📋 README.md
 ```
 
 ## How Authentication Works
@@ -89,6 +125,38 @@ npx playwright test --headed
 3. **MFA Challenge**: If MFA is required, generates TOTP code automatically
 4. **Session Save**: Stores authentication cookies in `auth.json`
 5. **Test Execution**: All tests reuse the saved session
+
+The authentication is orchestrated through Playwright's `globalSetup` configuration:
+
+```typescript
+// playwright.config.ts
+export default defineConfig({
+  globalSetup: require.resolve('./login/authentication-setup'),
+  use: {
+    storageState: './login/auth.json',
+  },
+});
+```
+> [!NOTE]
+> To better understand how Playwright's `globalSetup` works and how it's used to initialize authentication or setup logic before tests, visit the [official documentation](https://playwright.dev/docs/test-global-setup-teardown). 
+
+### Key Functions
+
+The authentication uses two main functions:
+
+```typescript
+// 1. Entry point called by Playwright's globalSetup
+export default async function globalSetup(): Promise<void>
+
+// 2. Handles complete login flow including MFA  
+async function authenticate(page, userName, password, pageURL, otpSecret?)
+
+// 3. Generates TOTP codes when MFA is required
+function generateMicrosoftTOTP(userName: string, otpSecret: string): string
+```
+
+> [!NOTE]
+> Check `login/authentication-setup.ts` for the complete implementation details.
 
 ## Azure DevOps Pipeline Setup
 
@@ -123,8 +191,7 @@ The pipeline runs automatically on:
 - ✅ Never commit `.env` files or `auth.json`
 - ✅ Use Azure DevOps variable groups for secrets
 - ✅ Mark sensitive variables as secret
-- ✅ Use service accounts with minimal permissions
-- ✅ Regularly rotate credentials
+- ✅ Use accounts with sufficient permissions / roles
 
 ## Troubleshooting
 
@@ -132,6 +199,14 @@ The pipeline runs automatically on:
 - Verify your credentials in the `.env` file
 - Check if MFA is properly configured
 - Ensure the TOTP secret key is correct
+- **Timeout Issues**: If you encounter timeout errors during the Microsoft authentication process (e.g., when locating email input, password input, or other authentication elements), you can adjust the timeout values in `authentication-setup.ts` to accommodate slower page loads or network conditions
+
+```typescript
+// Email
+const emailInput = page.locator('input[type=email]');
+await emailInput.waitFor({ state: 'visible', timeout: 5000 }); // Increased from 2000ms to 5000ms
+await emailInput.fill(userName);
+```
 
 ## Important Files to .gitignore
 
@@ -150,8 +225,6 @@ playwright/.cache/
 
 ## Acknowledgments
 
-This solution is based on the excellent work by **Elio Struyf** in his article [**"Automating M365 login with MFA in Playwright tests"**](https://www.eliostruyf.com/automating-microsoft-365-login-mfa-playwright-tests/). Thank you for sharing this valuable approach!
+Authentication implementation follows the approach outlined by **Elio Struyf** in his article [**"Automating M365 login with MFA in Playwright tests"**](https://www.eliostruyf.com/automating-microsoft-365-login-mfa-playwright-tests/) and was adapted based on it.
 
 ---
-
-**Note**: This solution works with any Microsoft 365 application that uses the standard Microsoft authentication flow. For specific applications, you may need to adjust the authentication selectors in `authentication-setup.ts`.
